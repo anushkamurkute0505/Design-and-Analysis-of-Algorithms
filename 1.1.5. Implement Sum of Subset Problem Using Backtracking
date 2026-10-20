@@ -1,0 +1,77 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_ELEMENTS 25
+#define MAX_SUBSETS 1050000
+
+int n;
+int weights[MAX_ELEMENTS];
+int target_sum;
+
+// Arrays to store the discovered subsets for reverse printing
+int *subsets[MAX_SUBSETS];
+int subset_sizes[MAX_SUBSETS];
+int subset_count = 0;
+
+// Temporary array to track the current subset path
+int current_subset[MAX_ELEMENTS];
+
+void find_subsets(int index, int current_sum, int current_size) {
+    // If the target sum is reached, record the subset and return
+    if (current_sum == target_sum) {
+        subsets[subset_count] = (int *)malloc(current_size * sizeof(int));
+        for (int i = 0; i < current_size; i++) {
+            subsets[subset_count][i] = current_subset[i];
+        }
+        subset_sizes[subset_count] = current_size;
+        subset_count++;
+        return;
+    }
+
+    // Base case: if all elements are processed or sum exceeds target
+    if (index == n || current_sum > target_sum) {
+        return;
+    }
+
+    // Choice 1: Include the current element
+    current_subset[current_size] = weights[index];
+    find_subsets(index + 1, current_sum + weights[index], current_size + 1);
+
+    // Choice 2: Exclude the current element
+    find_subsets(index + 1, current_sum, current_size);
+}
+
+int main() {
+    // Read input data
+    if (scanf("%d", &n) != 1) return 0;
+    
+    for (int i = 0; i < n; i++) {
+        if (scanf("%d", &weights[i]) != 1) return 0;
+    }
+    
+    if (scanf("%d", &target_sum) != 1) return 0;
+
+    // Run the backtracking algorithm
+    find_subsets(0, 0, 0);
+
+    // Print output based on results
+    if (subset_count == 0) {
+        printf("-1\n");
+    } else {
+        // Print in reverse order of discovery
+        for (int i = subset_count - 1; i >= 0; i--) {
+            for (int j = 0; j < subset_sizes[i]; j++) {
+                printf("%d", subsets[i][j]);
+                if (j < subset_sizes[i] - 1) {
+                    printf(" ");
+                }
+            }
+            printf(" \n");
+            
+            // Free allocated memory
+            free(subsets[i]);
+        }
+    }
+
+    return 0;
+}
